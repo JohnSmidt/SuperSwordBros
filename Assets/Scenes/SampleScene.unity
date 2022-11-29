@@ -267,13 +267,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6a6a2b0720f3f641974abe75a58cfaf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 3
-  dodgeSpeed: 0
-  dodgeCooldownTime: 0
-  stunTime: 0
-  healthPoints: 0
-  blockPoints: 0
-  manaPoints: 0
+  moveSpeed: 10
+  dodgeSpeed: 20
+  stunTime: 1
+  healthPoints: 100
+  blockPoints: 20
+  manaPoints: 100
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -327,7 +326,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 30
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2

@@ -5,8 +5,8 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField]
-    private const float dodgeTime = 0.5f;
-    private const float dodgeCooldownTime = 1.5f;
+    private const float dodgeTime = 0.33f;
+    private const float dodgeCooldownTime = dodgeTime + 0.5f;
     private Rigidbody2D rb;
 
     float horizontal;
@@ -15,11 +15,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private float moveSpeed, dodgeSpeed, stunTime;
 
+    private GameObject primaryWeapon;
+    private GameObject secondaryWeapon;
+
     [SerializeField]
     private int healthPoints, blockPoints, manaPoints;
 
     // Enumerators
-    //private enum direction;
     //private enum inventory;
     private bool isDodgeCooldown = false;
     private bool isPaused = false;
@@ -39,24 +41,43 @@ public class PlayerMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        horizontal = 0;
+        vertical = 0;
         rb = GetComponent<Rigidbody2D>();        
     }
 
     // Checking controller presses
     void Update()
     {
-        //Debug.Log(canDodge);
-        if (Input.GetButtonDown("Dodge") && canDodge)
+        // Basic Movement
+        horizontal = Input.GetAxisRaw("Horizontal");
+        vertical = Input.GetAxisRaw("Vertical");
+        if (horizontal != 0 || vertical != 0)
         {
-            Debug.Log("Dodge Button Pressed");
-            if (horizontal != 0 || vertical != 0)
+            isMoving = true;
+        }
+        else
+        {
+            isMoving = false;
+        }
+
+
+
+        //Debug.Log(canDodge);
+        if (Input.GetButtonDown("Dodge"))
+        {
+            // Can we dodge?
+            if(canDodge)
             {
+                Debug.Log("Dodging...");
                 isDodging = true;
                 canDodge = false;
                 dodgeDirection = new Vector2(horizontal, vertical);
                 currentDodgeTime = dodgeTime;
                 currentDodgeCooldownTime = dodgeCooldownTime;
             }
+            
+            
         }
 
         if (Input.GetButtonDown("Attack"))
@@ -82,39 +103,32 @@ public class PlayerMovement : MonoBehaviour
     // Moving the player
     private void FixedUpdate()
     {
-        // Base Movement
+       
         if(!isPaused)
         {
-            move();
-        }
-
-        
-    }
-    private void move()
-    {
-        if(canMove && !isDodging) // If the player can send movement commands...
-        {
-            horizontal = Input.GetAxisRaw("Horizontal");
-            vertical = Input.GetAxisRaw("Vertical");
-            Vector2 movement = new Vector2(horizontal, vertical);
-            movement = movement.normalized * moveSpeed;
-            rb.velocity = movement;
-        }
-
-        if(isDodging)
-        {
-            if(currentDodgeTime > 0)
+            // Base Movement
+            if (canMove && !isDodging) // If the player can send movement commands...
             {
-                dodgeDirection = dodgeDirection.normalized * dodgeSpeed;
-                rb.velocity = dodgeDirection;
-                currentDodgeTime -= Time.deltaTime;
+                Vector2 movement = new Vector2(horizontal, vertical);
+                movement = movement.normalized * moveSpeed;
+                rb.velocity = movement;
             }
-            else
+
+            // Dodging
+            if (isDodging)
             {
-                isDodging = false;
-                
+                if (currentDodgeTime > 0)
+                {
+                    dodgeDirection = dodgeDirection.normalized * dodgeSpeed;
+                    rb.velocity = dodgeDirection;
+                    currentDodgeTime -= Time.deltaTime;
+                }
+                else
+                {
+                    isDodging = false;
+
+                }
             }
         }
-        
     }
 }
