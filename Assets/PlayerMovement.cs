@@ -4,30 +4,27 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField]
-    private const float dodgeTime = 0.33f;
-    private const float dodgeCooldownTime = dodgeTime + 0.5f;
     private Rigidbody2D rb;
 
+    [SerializeField]
+    private int dodgeStaminaDrain = 30;
+   
+    // Direction
     float horizontal;
     float vertical;
 
     [SerializeField]
-    private float moveSpeed, dodgeSpeed, stunTime;
+    private float moveSpeed, dodgeSpeed, stunTime, 
+                  staminaPoints, staminaRegenSpeed,
+                  healthPoints, manaPoints, manaRegenSpeed,
+                  dodgeTime = 0.33f, staminaCapacity = 100f;
 
     private GameObject primaryWeapon;
     private GameObject secondaryWeapon;
 
-    [SerializeField]
-    private int healthPoints, blockPoints, manaPoints;
-
-    // Enumerators
-    //private enum inventory;
-    private bool isDodgeCooldown = false;
     private bool isPaused = false;
     private Vector2 dodgeDirection;
-    private float currentDodgeTime; // Do I need this?
-    private float currentDodgeCooldownTime;
+    private float currentDodgeTime;
     private bool canBlock = true;
     private bool isBlocking = false;
     private bool isDodging = false;
@@ -49,86 +46,78 @@ public class PlayerMovement : MonoBehaviour
     // Checking controller presses
     void Update()
     {
+    
         // Basic Movement
         horizontal = Input.GetAxisRaw("Horizontal");
         vertical = Input.GetAxisRaw("Vertical");
         if (horizontal != 0 || vertical != 0)
         {
             isMoving = true;
+            canDodge = true;
         }
         else
         {
             isMoving = false;
+            canDodge = false;
         }
 
-
-
-        //Debug.Log(canDodge);
-        if (Input.GetButtonDown("Dodge"))
+        if (Input.GetButtonDown("Dodge") && staminaPoints > 0)
         {
             // Can we dodge?
-            if(canDodge)
+            if (canDodge)
             {
                 Debug.Log("Dodging...");
+                staminaPoints -= dodgeStaminaDrain;
                 isDodging = true;
                 canDodge = false;
                 dodgeDirection = new Vector2(horizontal, vertical);
                 currentDodgeTime = dodgeTime;
-                currentDodgeCooldownTime = dodgeCooldownTime;
             }
-            
-            
         }
 
         if (Input.GetButtonDown("Attack"))
         {
-            Debug.Log("Attack Button Pressed");
+            Debug.LogWarning("Attack Button Not Implemented");
         }
         if (Input.GetButtonDown("Block"))
         {
-            Debug.Log("Block Button Pressed");
+            Debug.LogWarning("Block Button Not Implemented");
         }
-
-        if(currentDodgeCooldownTime > 0)
-        {
-            currentDodgeCooldownTime -= Time.deltaTime;
-        }
-        else
-        {
-            canDodge = true;
-        }
-        
     }
 
     // Moving the player
     private void FixedUpdate()
     {
        
-        if(!isPaused)
+        // Base Movement
+        if (canMove && !isDodging) // If the player can send movement commands...
         {
-            // Base Movement
-            if (canMove && !isDodging) // If the player can send movement commands...
-            {
-                Vector2 movement = new Vector2(horizontal, vertical);
-                movement = movement.normalized * moveSpeed;
-                rb.velocity = movement;
-            }
+            Vector2 movement = new Vector2(horizontal, vertical);
+            movement = movement.normalized * moveSpeed;
+            rb.velocity = movement;
+        }
 
-            // Dodging
-            if (isDodging)
+        // Dodging
+        if (isDodging)
+        {
+            if (currentDodgeTime > 0)
             {
-                if (currentDodgeTime > 0)
-                {
-                    dodgeDirection = dodgeDirection.normalized * dodgeSpeed;
-                    rb.velocity = dodgeDirection;
-                    currentDodgeTime -= Time.deltaTime;
-                }
-                else
-                {
-                    isDodging = false;
-
-                }
+                dodgeDirection = dodgeDirection.normalized * dodgeSpeed;
+                rb.velocity = dodgeDirection;
+                currentDodgeTime -= Time.deltaTime;
             }
+            else
+            {
+                isDodging = false;
+            }
+        }
+        if (staminaPoints >= staminaCapacity)
+        {
+            staminaPoints = staminaCapacity;
+        }
+        else
+        {
+            staminaPoints += Time.deltaTime * staminaRegenSpeed;
         }
     }
 }
